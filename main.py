@@ -9,24 +9,43 @@ import socket
 import threading as th
 
 ##############
-# Declarations#
+# PWM Declarations (PWM occurs on Arduino)#
 ##############
+#General configs
+maxTurnAngle=31 #in degrees
+pwmTurnMin=1 #in Milliseconds
+pwmTurnMid=1.5 #in Milliseconds
+pwmTurnMax=2 #in Milliseconds
+pwmThrottleMin=1 #in Milliseconds
+pwmThrottleMid=1.5 #in Milliseconds
+pwmThrottleMax=2 #in Milliseconds
+pwmBaseFrequency=50.98 #in Hertz
 
 #default serial connection vals
-comPort = '/dev/ttyACM0'
-comBaud = 115200
-comTimeout = 0.1
+pwmBitRes = 8
+pwmTurn = 0
+pwmSpeed = 0
+dataIn = 'null'
+handshake = 'null'
+configResponse = 'null'
 
+###############################
+# Pure Pursuit Config#
+###############################
+# Mapping and localization
+waypoints = []
+waypoints_utm = []
 
-# Pure Pursuit Config
+# Pure Pursuit Variables
 L = 1 # meters
 goalRadius = .5;
 spacingBetweenCoarseWaypoints =  0.05# 6 inches
 MaxTurnAngle = np.deg2rad(14.5) #degrees to avoid too large a PWM value
 MaxAngularVelocity = math.pi/8; # radians per second; (not implemented yet need to implement and optimize to reduce fast angular changes)
 
-# Mapping and localization
-waypoints = [] # load GPS waypoints from file...
+###############################
+# Wi-Fi Hotspot Connection from Phone to RPi#
+###############################
 
 # UDP from phone
 localIP = socket.gethostbyname(socket.gethostname())
@@ -43,17 +62,63 @@ sensorDict = {}
 ###############################
 # Serial connection for Arduino#
 ###############################
-speedDutyCycle = 0
-angleDutyCycle = 0
-arduinoSerial = serial.Serial(port=comPort, baudrate=comBaud, timeout=comTimeout)
 
-def write_read():
-    message = str(speedDutyCycle) + "/n" + str(angleDutyCycle)
-    while arduinoSerial.isOpen():
-        arduinoSerial.write(message.encode())
-        time.sleep(0.05)
-        data = arduinoSerial.readline()
+#Initialize serial connection
+ser = serial.Serial('/dev/ttyACM0', 9800, timeout=1)
 
+#Set initial parameters on arduino
+def txSettings():
+    # output config legend: '<message_type:bit_resolution:initial_turn_pwm_value:initial_speed_pwm_value:>'
+    try:
+        message = '<config:' + str(pwmBitRes) + ':' +':' + str(pwmTurnMid) + ':' + str(pwmThrottleMid) + '>'
+        ser.write(message.encode('utf-8'))
+    except:
+        print("ERROR: Could not send configs to Arduino")
+        return -1
+
+#Send control data
+def txControls(): #Have one string fore setup and one for controls
+        #output string legend: '<message_type:turn_pwm_value:speed_pwm_value>'
+        try:
+            message = '<control:' + str(pwmBitRes) + ':' + '0' + ':' + str(self.pwmTurn) + ':' + str(self.pwmSpeed) + '>'
+            ser.write(message.encode('utf-8'))
+        except:
+            print('ERROR: Could not send controls to Arduino')
+            return -1
+
+#Recieve data
+def rx(): #Put try/catch here
+    dat = self.ser.readline()
+    dataIn=dat.decode("utf-8")
+    dataIn = dataIn.split(':')
+
+#set steering PWM value for arduino
+def turnControl(angle):
+    turnAngle = (maxTurnAngle/2) + angle
+    #calculate pwm value
+    pulseWidth = (pwmTurnMax-pwmTurnMin)*(turnAngle/maxTurnAngle)+pwmTurnMin
+    tempPwmTurn = round((2**self.pwmBitRes)*(pulseWidth/(1/pwmBaseFrequency)))
+    if tempPwmTurn != pwmTurn:
+        pwmTurn = tempPwmTurn
+        return txControls()
+
+#set throttle PWM value for arduino
+def throttleControl(spdPercent):
+    #calculate pwm value
+    pulseWidth = (pwmThrottleMax-pwmThrottleMin)*spdPercent/100+pwmThrottleMin
+    tempPwmSpeed = round((2**self.pwmBitRes)*(pulseWidth/(1/pwmBaseFrequency)))
+    if pwmSpeed != tempPwmSpeed:
+        pwmSpeed = tempPwmSpeed
+        return txControls()
+
+#Run loop for sending and recieving serial data
+#def serialLoop():
+    #while(1):
+        #self.ser.flushInput()
+        #self.ser.flushOutput()
+        #tx()
+        #rx()
+        #time.sleep(0.5)
 
 ######################
 # Getting GPS and Sensor from Phone
@@ -288,10 +353,13 @@ def smoothWaypoints(wp_utm, spacing):
 ######
 def main():
     print('T-Rover Initializing...')
+
+    print(' ')
+    print('############START UDP###################')
     print('Setting Up UDP Server...')
     print(localIP)
     print(localPort)
-    # Set up thread for UDP Server
+    # Set up thread for UDP Server (phone is pushing as client to RPI)
     th_udp = threading.Thread(name='udpListener', target=udpListener, args=(sensorDict, ))
     th_udp.start()
 
@@ -302,31 +370,53 @@ def main():
     while noGPS:
         if 'gps' in sensorDict.values():
             noGPS = False
-        time.sleep(.1)
+        time.sleep(1)
+    print('Valid GPS signal received from phone.')
+    print('##############END UDP#################')
+    print(' ')
 
     # Tyler TO-DO: Set up thread for Arduino Serial Connection
-    th_arduino_serial = threading.Thread(name='', target=)
+    print(' ')
+    print('#############START SERIAL##################')
+    th_arduino_serial = threading.Thread(name='serialLoop', target=rx)
     th_arduino_serial.start()
-    print('Awaiting OK from Arduino...')
-    while (...):
-
+    print('Awaiting connected from Arduino...')
+    while(dataIn != 'connected'):
+        time.sleep(1)
+    print('Arduino communication established.')
+    print('Sending Config Settings to Arduino.')
+    txSettings() #
+    while (dataIn != 'set'):
+        time.sleep(1)
+    print('Arduino configuration complete.')
+    print('#############END SERIAL##################')
+    print(' ')
+    print('##############START WAYPOINTS#################')
     print('Loading Coarse GPS Waypoints...')
-    # read from local file and read in waypoints
+    # read from local file "waypoints.txt" and read into 2-D float array called: waypoints
+    f3 = open(fname, "r")
+    for x in f3:
+        latLong = x.split(",");
+        if ("\n" in latLong[1]):
+            latLong[1] = latLong[1].replace("\n", "")
+        latLong = [float(i) for i in latLong]
+        waypoints.append(latLong)
+    f3.close()
 
     print('Converting Coarse GPS Waypoints to UTM Coordinates')
-    # convert all coarse points to utm coordinates
-    wp_utm = []
+    # convert all coarse gps waypoints to utm coordinates
     for i in range(len(waypoints)):
         [txx, tyy, tuu] = deg2utm(waypoints[i][0], waypoints[i][1])
-        wp_utm.append((txx, tyy, tuu))
+        waypoints_utm.append((txx, tyy, tuu))
 
     print('Smoothing UTM Waypoints...')
     # smooth coarse utm waypoints
-    [sxx, syy, suu] = smoothPoints(wp_utm, spacingBetweenCoarseWaypoints)
+    [sxx, syy, suu] = smoothPoints(waypoints_utm, spacingBetweenCoarseWaypoints)
     troverGoal = (sxx[end], syy[end])
-
-    print('T-Rover System Ready.')
-    print('T-Rover System Starting.')
+    print('##############END WAYPOINTS#################')
+    print(' ')
+    print('T-Rover System Ready!')
+    print('T-Rover Pure Pursuit Begin!')
     robotGoal = (sxx[end],syy[end])
     distanceToGoal = 9999 # initial value
     utmzone = ''
@@ -336,30 +426,30 @@ def main():
         rover_heading = sensorDict["compass"] # bearing angle (we may need to smooth this)
         [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon) # convert robot position from gps to utm
         pose = [rover_x, rover_y, rover_heading]
-
+        #print('Current pose: %d' % (pose[0],pose[1],pose[2]))
         # Calculate distance to goal
         distanceToGoal = np.linalg.norm(pose[1:2] - troverGoal)
 
         # Calculate goal point in utm coordinates
         d = L
-        for i in (range(len(wp_utm_smooth)):-1: 2):
-            W = wp_utm_smooth(i,:)
-            goal_x = W[1, 1]
-            goal_y = W[1, 2]
+
+        for i in range(len(wp_utm_smooth)-1,-1,-1):
+            W = wp_utm_smooth[i]
+            goal_x = W[0]
+            goal_y = W[1]
             x2 = pose[0]
             y2 = pose[1]
-            d = math.sqrt((goal_x - x2) ^ 2 + (goal_y - y2) ^ 2)
+            d = math.sqrt((goal_x - x2)**2 + (goal_y - y2)**2)
             if d <= L:
                 break
         [turnAngle, speedValue] = purePursuit(pose, goal_x, goal_y, d)
 
-        # Convert turnAngle, speedValue to Duty-Cycle
+        # Convert tuturnControl(rnAngle, speedValue to Duty-Cycle
+        if turnControl(turnAngle)==-1:
+            # To-Do: Send all stop commands to arduino
+            break
 
-        # Send Duty-Cycle commands to arduino
-
+        if throttleControl(pwmThrottleMid+1)==-1:
+            # To-Do: Send all stop commands to arduino
+            break
         time.sleep(.1)
-
-#if __name__ == '__main__':
-#    try:
-#        main()
-#        pass
