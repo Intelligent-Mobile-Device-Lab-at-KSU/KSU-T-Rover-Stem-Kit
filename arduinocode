@@ -1,0 +1,170 @@
+////////////////////
+//Global variables//
+////////////////////
+
+//pins
+int escPwm = ; //Pin for esc signal
+int servoPwm = ; //Pin for servo signal
+
+//serial
+const byte numChars = 32;
+char receivedChars[numChars];
+char tempChars[numChars]; // temporary array for use when parsing
+boolean newData = false;
+boolean configSet = false;
+char messageType[numChars] = {0};
+int attempts = 0;
+String tmpstr;
+//Recieved data
+int bitRes = 0;
+int initialTurnPwm = 0;
+int initialThrottlePwm = 0;
+int turnPwmValue = 0;
+int throttlePwmValue = 0;
+int noDataCount = 0;
+int noDataLimit = 20;
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(escPwm, OUTPUT);
+    pinMode(servoPwm, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
+
+}
+
+//============
+
+void loop() {
+  if (!configSet) { //Send hello message to RPi until configs have been set
+    Serial.println("hello?");
+    delay(1000);
+    readInConfigData();
+  }
+
+  if(configSet){// Receive control commands from RPi
+    delay(100);
+    if(!readInControlData()){
+      noDataCount++;
+    } else {
+      noDataCount=0;
+    }
+  }
+
+  if (noDataCount>noDataLimit){
+    noDataCount = 0;
+    configSet=false;
+    Serial.println("Is the RPi alive? I'm stopping the vehicle!");
+  }
+
+}
+
+boolean readInConfigData(){
+  if (Serial.available() > 0) { //Recieved data
+    Serial.readBytes(tempChars,numChars);
+    serialBufferFlush(); //clear remaining data
+    parseConfigData();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+boolean readInControlData(){
+  if (Serial.available() > 0) { //Recieved data
+    Serial.readBytes(tempChars,numChars);
+    serialBufferFlush(); //clear remaining data
+    parseControlData();
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void parseConfigData() {      // split the data into its parts. Borrowed from https://forum.arduino.cc/index.php?topic=396450.0
+
+  char * strtokIndx; // this is used by strtok() as an index
+
+  strtokIndx = strtok(tempChars, ":");
+  strcpy(messageType, strtokIndx);
+
+  if (*messageType == 'C') {//if configs are being set
+
+    strtokIndx = strtok(NULL, ":");
+    bitRes = atoi(strtokIndx);
+    //analogWriteResolution(bitRes);
+
+    strtokIndx = strtok(NULL, ":");
+    initialTurnPwm = atoi(strtokIndx);
+
+    strtokIndx = strtok(NULL, ":");
+    initialThrottlePwm = atoi(strtokIndx);
+
+    Serial.println("thank you!");
+    Serial.flush();
+    configSet = true;
+    //serialBufferFlush(); //Uncomment if Arduino is using old serial messages
+  }
+
+}
+
+void parseControlData() {      // split the data into its parts. Borrowed from https://forum.arduino.cc/index.php?topic=396450.0
+
+  char * strtokIndx; // this is used by strtok() as an index
+
+  strtokIndx = strtok(tempChars, ":");
+  strcpy(messageType, strtokIndx);
+
+  if (*messageType == 'D') { //if controls are being set
+
+    strtokIndx = strtok(NULL, ":");
+    turnPwmValue = atoi(strtokIndx);
+    //analogWrite(servoPwm, turnPwmValue);
+
+
+    strtokIndx = strtok(NULL, ":");
+    throttlePwmValue = atoi(strtokIndx);
+    //analogWrite(escPwm, throttlePwmValue);
+    Serial.println("ack");
+    Serial.flush();
+    //serialBufferFlush(); //Uncomment if Arduino is using old serial messages
+  }
+}
+
+void serialBufferFlush() {
+  while (Serial.available() > 0) {
+  Serial.read();
+  }
+}
+
+//============
+
+//void readInData2() { //Borrowed from https://forum.arduino.cc/index.php?topic=396450.0
+//    static boolean recvInProgress = false;
+//    static byte ndx = 0;
+//    char startMarker = '<';
+//    char endMarker = '>';
+//    char rc;
+//
+//    while (Serial.available() > 0 && newData == false) {
+//        rc = Serial.read();
+//        if (recvInProgress == true) {
+//            if (rc != endMarker) {
+//                receivedChars[ndx] = rc;
+//                ndx++;
+//                if (ndx >= numChars) {
+//                    ndx = numChars - 1;
+//                }
+//            }
+//            else {
+//                receivedChars[ndx] = '\0'; // terminate the string
+//                recvInProgress = false;
+//                ndx = 0;
+//                newData = true;
+//            }
+//        }
+//
+//        else if (rc == startMarker) {
+//            recvInProgress = true;
+//        }
+//    }
+//}
