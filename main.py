@@ -471,7 +471,7 @@ def main():
     print(' ')
     print('##############START WAYPOINTS#################')
     print('Loading Coarse GPS Waypoints...')
-    # read from local file "waypoints.txt.txt" and read into 2-D float array called: waypoints.txt
+    # read from local file "waypoints.txt" and read into 2-D float array called: waypoints.txt
     f3 = open(fname, "r")
     for x in f3:
         latLong = x.split(",");
@@ -521,9 +521,10 @@ def main():
             if d <= L:
                 break
         print('Goal_X: %d, Goal_Y: %d' % (goal_x, goal_y))
-        [turnAngle, speedValue] = purePursuit(pose, goal_x, goal_y, d)
-        print('Turn Angle: %d, Speed: %d' % (turnAngle, speedValue))
-        turnControl(turnAngle)
+        [turnAngle_rad, speedValue] = purePursuit(pose, goal_x, goal_y, d)
+        turnAngle_deg = float(np.degrees(turnAngle_rad))
+        print('Turn Angle (Deg): %d, Speed: %d' % (turnAngle_deg, speedValue))
+        turnControl(turnAngle_deg)
         throttleControl(speedValue)
         txControls()
         while True:
