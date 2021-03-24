@@ -12,19 +12,16 @@ import threading as th
 # PWM Declarations (PWM occurs on Arduino)#
 ##############
 #General configs
-maxTurnAngle=31 #in degrees
-pwmTurnMin=1 #in Milliseconds
-pwmTurnMid=1.5 #in Milliseconds
-pwmTurnMax=2 #in Milliseconds
-pwmThrottleMin=1 #in Milliseconds
-pwmThrottleMid=1.5 #in Milliseconds
-pwmThrottleMax=2 #in Milliseconds
-pwmBaseFrequency=50.98 #in Hertz
+maxTurnAngle=105.5 #in degrees
+stopTurnAngle=74.5 #in degrees
+minTurnAngle=74.5 #in degrees
+ThrottleMin=0 #in Milliseconds
+ThrottleStop=0 #in Milliseconds
+ThrottleMax=0 #in Milliseconds
 
 #default serial connection vals
-pwmBitRes = 8
-pwmTurn = 0
-pwmSpeed = 0
+turnAngle = 0
+speed = 0
 dataIn = 'null'
 
 ###############################
@@ -67,9 +64,9 @@ ser = serial.Serial('/dev/ttyACM0', 9800, timeout=1)
 
 #Set initial parameters on arduino
 def txSettings():
-    # output config legend: '<message_type(C for configure and D for controlls):bit_resolution:initial_turn_pwm_value:initial_speed_pwm_value:>'
+    # output config legend: '<message_type(C for configure and D for controlls):initial_turn_angle:initial_speed>'
     try:
-        message = 'C:' + str(pwmBitRes) + ':' + str(pwmTurnMid) + ':' + str(pwmThrottleMid)
+        message = 'C:' + str(stopTurnAngle) + ':' + str(ThrottleStop)
         ser.write(message.encode())
     except:
         print("ERROR: Could not send configs to Arduino")
@@ -79,9 +76,9 @@ def txSettings():
 def txControls(): #Have one string fore setup and one for controls
         global pwmTurn
         global pwmSpeed
-        #output string legend: '<message_type(C for configure and D for controlls):turn_pwm_value:speed_pwm_value>'
+        #output string legend: '<message_type(C for configure and D for controlls):turn_angle:speed>'
         try:
-            message = 'D:' + str(pwmTurn) + ':' + str(pwmSpeed)
+            message = 'D:' + str(turnAngle) + ':' + str(speed)
             ser.write(message.encode())
         except:
             print('ERROR: Could not send controls to Arduino')
@@ -98,22 +95,18 @@ def serialLoop():
 
 #set steering PWM value for arduino
 def turnControl(angle):
-    global pwmTurn
-    turnAngle = (maxTurnAngle/2) + angle
-    #calculate pwm value
-    pulseWidth = (pwmTurnMax-pwmTurnMin)*(turnAngle/maxTurnAngle)+pwmTurnMin
-    tempPwmTurn = round((2**pwmBitRes)*(pulseWidth/(1/pwmBaseFrequency)))
-    if tempPwmTurn != pwmTurn:
-        pwmTurn = tempPwmTurn
+    global turnAngle
+    turnAngle = 90 - angle
 
 #set throttle PWM value for arduino
 def throttleControl(spdPercent):
-    global pwmSpeed
-    #calculate pwm value
-    pulseWidth = (pwmThrottleMax-pwmThrottleMin)*spdPercent/100+pwmThrottleMin
-    tempPwmSpeed = round((2**pwmBitRes)*(pulseWidth/(1/pwmBaseFrequency)))
-    if pwmSpeed != tempPwmSpeed:
-        pwmSpeed = tempPwmSpeed
+    global speed
+    speed = spdPercent
+    ##calculate pwm value
+    #pulseWidth = (pwmThrottleMax-pwmThrottleMin)*spdPercent/100+pwmThrottleMin
+    #tempPwmSpeed = round((2**pwmBitRes)*(pulseWidth/(1/pwmBaseFrequency)))
+    #if pwmSpeed != tempPwmSpeed:
+        #pwmSpeed = tempPwmSpeed
 
 ######################
 # Getting GPS and Sensor from Phone

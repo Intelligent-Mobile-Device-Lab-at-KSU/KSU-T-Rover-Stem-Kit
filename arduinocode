@@ -1,10 +1,18 @@
+#include <Servo.h>
+
+//////////////////
+//Global objects//
+//////////////////
+Servo myServo;
+Servo myEsc
+
 ////////////////////
 //Global variables//
 ////////////////////
 
 //pins
-int escPwm = ; //Pin for esc signal
-int servoPwm = ; //Pin for servo signal
+int escPin = ; //Pin for esc signal
+int servoPin = ; //Pin for servo signal
 
 //serial
 const byte numChars = 32;
@@ -15,21 +23,19 @@ boolean configSet = false;
 char messageType[numChars] = {0};
 int attempts = 0;
 String tmpstr;
+
 //Recieved data
-int bitRes = 0;
-int initialTurnPwm = 0;
-int initialThrottlePwm = 0;
-int turnPwmValue = 0;
-int throttlePwmValue = 0;
+float initialTurn = 0;
+float initialThrottle = 0;
+float turnAngle = 90;
+float throttle = 90;
 int noDataCount = 0;
 int noDataLimit = 20;
 
 void setup() {
     Serial.begin(9600);
-    pinMode(escPwm, OUTPUT);
-    pinMode(servoPwm, OUTPUT);
-    pinMode(LED_BUILTIN, OUTPUT);
-
+    myServo.attach(servoPin);
+    myEsc.attach(escPin);
 }
 
 //============
@@ -82,7 +88,7 @@ boolean readInControlData(){
 
 void parseConfigData() {      // split the data into its parts. Borrowed from https://forum.arduino.cc/index.php?topic=396450.0
 
-  char * strtokIndx; // this is used by strtok() as an index
+  char * strtokIndx; // this is used by strtok() and strtof() as an index
 
   strtokIndx = strtok(tempChars, ":");
   strcpy(messageType, strtokIndx);
@@ -90,14 +96,10 @@ void parseConfigData() {      // split the data into its parts. Borrowed from ht
   if (*messageType == 'C') {//if configs are being set
 
     strtokIndx = strtok(NULL, ":");
-    bitRes = atoi(strtokIndx);
-    //analogWriteResolution(bitRes);
+    initialTurn = atof(strtokIndx);
 
     strtokIndx = strtok(NULL, ":");
-    initialTurnPwm = atoi(strtokIndx);
-
-    strtokIndx = strtok(NULL, ":");
-    initialThrottlePwm = atoi(strtokIndx);
+    initialThrottle = atof(strtokIndx);
 
     Serial.println("thank you!");
     Serial.flush();
@@ -117,16 +119,16 @@ void parseControlData() {      // split the data into its parts. Borrowed from h
   if (*messageType == 'D') { //if controls are being set
 
     strtokIndx = strtok(NULL, ":");
-    turnPwmValue = atoi(strtokIndx);
-    //analogWrite(servoPwm, turnPwmValue);
-
+    turnAngle = atof(strtokIndx);
+    myServo.write(turnAngle);
 
     strtokIndx = strtok(NULL, ":");
-    throttlePwmValue = atoi(strtokIndx);
-    //analogWrite(escPwm, throttlePwmValue);
+    throttle = atof(strtokIndx);
+    myEsc.write(throttle);
+
     Serial.println("ack");
-    Serial.flush();
-    //serialBufferFlush(); //Uncomment if Arduino is using old serial messages
+    Serial.flush(); //This function does not clear the input buffer. Please refer to the second post in this thread: https://forum.arduino.cc/index.php?topic=396450.0
+    serialBufferFlush(); //Uncomment if Arduino is using old serial messages
   }
 }
 
