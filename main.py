@@ -39,7 +39,7 @@ waypoints_utm = []
 L = 1 # meters
 goalRadius = .5; # meters
 spacingBetweenCoarseWaypoints =  0.05# 6 inches
-MaxTurnAngle = np.deg2rad(14.5) #degrees to avoid too large a PWM value
+pp_MaxTurnAngle = np.radians(14.5) #degrees to avoid too large a PWM value
 MaxAngularVelocity = math.pi/8; # radians per second; (not implemented yet need to implement and optimize to reduce fast angular changes)
 
 ###############################
@@ -47,7 +47,7 @@ MaxAngularVelocity = math.pi/8; # radians per second; (not implemented yet need 
 ###############################
 
 # UDP from phone
-localIP = "192.168.153.203"#socket.gethostbyname(socket.gethostname())
+localIP = "192.168.101.203"#socket.gethostbyname(socket.gethostname())
 localPort = 20001  # The RPi will open this port for receiving GPS and sensor input from phone.
 bufferSize = 1024
 
@@ -93,7 +93,7 @@ def serialLoop():
         global dataIn
         dat = ser.readline()
         dataIn = dat.decode("utf-8").rstrip()
-        print("From Arduino: " + dataIn)
+        #print("From Arduino: " + dataIn)
         time.sleep(.1)
 
 #set steering PWM value for arduino
@@ -148,11 +148,13 @@ def udpListener2(sensorDict):
             sensorDict["gps"] = [float(data[0]), float(data[1])]
         else:
             sensorDict["gps"] = [float(data[0]), float(data[1])]
+            #print("MAG: %f, %f, %f" % (float(data[2]),float(data[3]),float(data[4])))
             angle = math.atan2(float(data[3]), float(data[4]))
             angle = math.degrees(angle) + 270
             if angle > 360:
                 angle = angle - 360
             sensorDict["compass"] = angle
+            #print(angle)
         #print(data[1])
         #data[-1] = data[-1][:-1]
 
@@ -295,8 +297,8 @@ def purePursuit(pose, lx, ly, d):
     thesign = mysign((math.sin(pose[2]) * (lx - pose[0])) - (math.cos(pose[2]) * (ly - pose[1])))
     turnangle = thesign * turnangle
     # Ensure the turn control saturates at MaxTurnAngle defined by servo
-    if abs(turnangle) > MaxTurnAngle:
-        turnangle = thesign * MaxTurnAngle
+    if abs(turnangle) > pp_MaxTurnAngle:
+        turnangle = thesign * pp_MaxTurnAngle
 
     turnangle = myrem(turnangle, 2 * math.pi)
     return turnangle, speedval
@@ -502,14 +504,17 @@ def main():
     while (distanceToGoal > goalRadius):
         rover_lat = sensorDict["gps"][0] #gps lat
         rover_lon = sensorDict["gps"][1] #gps long
-        rover_heading = sensorDict["compass"] # bearing angle (we may need to smooth this)
+        rover_heading_deg = sensorDict["compass"] # bearing angle (we may need to smooth this)
+        rover_heading_rad = float(np.radians(rover_heading_deg))
         [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon) # convert robot position from gps to utm
-        pose = [rover_x, rover_y, rover_heading]
+        pose = [rover_x, rover_y, rover_heading_rad]
+
+        #print('Current pose: %f, %f, %f' % (pose[0],pose[1],pose[2]))
         pose = np.array(pose)
-        print('Current pose: %d, %d, %d' % (pose[0],pose[1],pose[2]))
+        #print(pose)
         # Calculate distance to goal
-        distanceToGoal = np.linalg.norm(pose[1:2] - troverGoal)
-        print('Distance to goal: %d' % (distanceToGoal))
+        distanceToGoal = np.linalg.norm(pose[0:1] - troverGoal)
+        #print('Distance to goal: %d' % (distanceToGoal))
         # Calculate goal point in utm coordinates
         for i in range(len(sxx)-1,-1,-1):
             #W = wp_utm_smooth[i]
@@ -520,10 +525,10 @@ def main():
             d = math.sqrt((goal_x - x2)**2 + (goal_y - y2)**2)
             if d <= L:
                 break
-        print('Goal_X: %d, Goal_Y: %d' % (goal_x, goal_y))
+        #print('Goal_X: %d, Goal_Y: %d' % (goal_x, goal_y))
         [turnAngle_rad, speedValue] = purePursuit(pose, goal_x, goal_y, d)
         turnAngle_deg = float(np.degrees(turnAngle_rad))
-        print('Turn Angle (Deg): %d, Speed: %d' % (turnAngle_deg, speedValue))
+        print('Turn Angle (Deg): %f, Speed: %d' % (turnAngle_deg, speedValue))
         turnControl(turnAngle_deg)
         throttleControl(speedValue)
         txControls()
