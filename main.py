@@ -64,8 +64,6 @@ ser = serial.Serial('/dev/ttyACM0', 9800, timeout=1)
 
 #Set initial parameters on arduino
 def txSettings():
-    global stopTurnAngle
-    global ThrottleStop
     # output config legend: '<message_type(C for configure and D for controlls):initial_turn_angle:initial_speed>'
     try:
         message = 'C:' + str(stopTurnAngle) + ':' + str(ThrottleStop)
@@ -76,8 +74,8 @@ def txSettings():
 
 #Send control data
 def txControls(): #Have one string fore setup and one for controls
-        global turnAngle
-        global speed
+        global pwmTurn
+        global pwmSpeed
         #output string legend: '<message_type(C for configure and D for controlls):turn_angle:speed>'
         try:
             message = 'D:' + str(turnAngle) + ':' + str(speed)
