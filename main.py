@@ -14,15 +14,16 @@ import threading as th
 # PWM Declarations (PWM occurs on Arduino)#
 ##############
 #General configs
-maxTurnAngle=105.5 #in degrees
-stopTurnAngle=90#74.5 #in degrees
-minTurnAngle=74.5 #in degrees
-ThrottleMin=0 #in Milliseconds
-ThrottleStop=0 #in Milliseconds
-ThrottleMax=0 #in Milliseconds
+maxTurnAngle=31 #in degrees
+stopTurnPWM=1500 #in milliseconds
+maxTurnPWM=2000
+minTurnPWM=1000
+ThrottleMin=900 #in Milliseconds
+ThrottleStop=1500 #in Milliseconds
+ThrottleMax=2000 #in Milliseconds
 
-#default serial connection vals
-turnAngle = stopTurnAngle
+#default serial vals
+turnPWM = stopTurnPWM
 speed = ThrottleStop
 nearStartingWaypoint = 0;
 dataIn = 'null'
@@ -61,11 +62,11 @@ ser = serial.Serial('/dev/ttyACM0', 9800, timeout=1)
 
 #Set initial parameters on arduino
 def txSettings():
-    global stopTurnAngle
+    global stopTurnPWM
     global ThrottleStop
     # output config legend: '<message_type(C for configure and D for controlls):initial_turn_angle:initial_speed>'
     try:
-        message = 'C:' + str(int(stopTurnAngle)) + ':' + str(int(ThrottleStop))
+        message = 'C:' + str(int(stopTurnPWM)) + ':' + str(int(ThrottleStop))
         ser.write(message.encode())
     except:
         print("ERROR: Could not send configs to Arduino")
@@ -73,12 +74,12 @@ def txSettings():
 
 #Send control data
 def txControls(): #Have one string fore setup and one for controls
-        global turnAngle
+        global turnPWM
         global speed
         global nearStartingWaypoint
         #output string legend: '<message_type(C for configure and D for controlls):turn_angle:speed>'
         try:
-            message = 'D:' + str(int(turnAngle)) + ':' + str(int(speed)) + ':' + str(int(nearStartingWaypoint))
+            message = 'D:' + str(int(turnPWM)) + ':' + str(int(speed)) + ':' + str(int(nearStartingWaypoint))
             ser.write(message.encode())
         except:
             print('ERROR: Could not send controls to Arduino')
@@ -94,19 +95,15 @@ def serialLoop():
         time.sleep(.1)
 
 #set steering PWM value for arduino
-def turnControl(angle):
-    global turnAngle
-    turnAngle = 90 - angle
+def turnControl(angle): //assumes left turns are positive and right turns are negative
+    global turnPWM
+    turnPWM = (maxTurnPWM-minTurnPWM)*(((maxTurnAngle/2)+angle)/maxTurnAngle)+minTurnPWM
+    
 
 #set throttle PWM value for arduino
 def throttleControl(spdPercent):
     global speed
-    speed = spdPercent
-    ##calculate pwm value
-    #pulseWidth = (pwmThrottleMax-pwmThrottleMin)*spdPercent/100+pwmThrottleMin
-    #tempPwmSpeed = round((2**pwmBitRes)*(pulseWidth/(1/pwmBaseFrequency)))
-    #if pwmSpeed != tempPwmSpeed:
-        #pwmSpeed = tempPwmSpeed
+    speed = (ThrottleMax-ThrottleMin)*spdPercent+ThrottleMin
 
 ######################
 # Getting GPS and Sensor from Phone

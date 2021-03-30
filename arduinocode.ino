@@ -25,10 +25,10 @@ int attempts = 0;
 String tmpstr;
 
 //Recieved data
-float initialTurn = 0;
-float initialThrottle = 0;
-float turnAngle = 90;
-float throttle = 90;
+float stopTurn = 0;
+float stopThrottle = 0;
+float turnAngle = 0;
+float throttle = 0;
 int noDataCount = 0;
 int noDataLimit = 20;
 int nearStartingWaypoint=0;
@@ -66,6 +66,12 @@ void loop() {
     noDataCount = 0;
     configSet=false;
     Serial.println("Is the RPi alive? I'm stopping the vehicle!");
+    myServo.writeMicroseconds(stopTurn);
+    if (throttle > 0) {
+      myEsc.writeMicroseconds(stopThrottle);
+      delay(500);
+    }
+    myEsc.writeMicroseconds(0);
   }
 
 }
@@ -109,15 +115,15 @@ void parseConfigData() {      // split the data into its parts. Borrowed from ht
   if (*messageType == 'C') {//if configs are being set
 
     strtokIndx = strtok(NULL, ":");
-    initialTurn = atof(strtokIndx);
-    myServo.write(initialTurn);
+    stopTurn = atof(strtokIndx);
+    myServo.write(stopTurn);
     strtokIndx = strtok(NULL, ":");
-    initialThrottle = atof(strtokIndx);
-    myEsc.write(initialThrottle);
+    stopThrottle = atof(strtokIndx);
+    myEsc.write(stopThrottle);
     Serial.println("thank you!");
     Serial.flush();
     configSet = true;
-    //serialBufferFlush(); //Uncomment if Arduino is using old serial messages
+    //serialBufferFlush(); //Uncomment if Arduino is using old serial data
   }
 
 }
@@ -133,11 +139,11 @@ void parseControlData() {      // split the data into its parts. Borrowed from h
 
     strtokIndx = strtok(NULL, ":");
     turnAngle = atof(strtokIndx);
-    myServo.write(turnAngle);
+    myServo.writeMicroseconds(turnAngle);
 
     strtokIndx = strtok(NULL, ":");
     throttle = atof(strtokIndx);
-    myEsc.write(throttle);
+    myEsc.writeMicroseconds(throttle);
 
     strtokIndx = strtok(NULL, ":");
     nearStartingWaypoint = atof(strtokIndx);
@@ -145,7 +151,7 @@ void parseControlData() {      // split the data into its parts. Borrowed from h
     String str1 = String(turnAngle);
     Serial.println(String("ack "+str1));
     Serial.flush(); //This function does not clear the input buffer. Please refer to the second post in this thread: https://forum.arduino.cc/index.php?topic=396450.0
-    serialBufferFlush(); //Uncomment if Arduino is using old serial messages
+    serialBufferFlush(); //Uncomment if Arduino is using old serial data
   }
 }
 
