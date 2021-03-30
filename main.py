@@ -95,9 +95,9 @@ def serialLoop():
         time.sleep(.1)
 
 #set steering PWM value for arduino
-def turnControl(angle): //assumes left turns are positive and right turns are negative
+def turnControl(angle): //assumes right turns are positive and left turns are negative
     global turnPWM
-    turnPWM = (maxTurnPWM-minTurnPWM)*(((maxTurnAngle/2)+angle)/maxTurnAngle)+minTurnPWM
+    turnPWM = (maxTurnPWM-minTurnPWM)*(((maxTurnAngle/2)-angle)/maxTurnAngle)+minTurnPWM
     
 
 #set throttle PWM value for arduino
