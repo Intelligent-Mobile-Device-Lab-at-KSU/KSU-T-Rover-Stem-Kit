@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 import threading
-
+import netifaces as ni
 import numpy as np
 import math
 import time
 import serial
 import socket
+import fcntl
+import struct
 import threading as th
 
 ##############
@@ -13,15 +15,16 @@ import threading as th
 ##############
 #General configs
 maxTurnAngle=105.5 #in degrees
-stopTurnAngle=74.5 #in degrees
+stopTurnAngle=90#74.5 #in degrees
 minTurnAngle=74.5 #in degrees
 ThrottleMin=0 #in Milliseconds
 ThrottleStop=0 #in Milliseconds
 ThrottleMax=0 #in Milliseconds
 
 #default serial connection vals
-turnAngle = 0
-speed = 0
+turnAngle = stopTurnAngle
+speed = ThrottleStop
+nearStartingWaypoint = 0;
 dataIn = 'null'
 
 ###############################
@@ -33,7 +36,7 @@ waypoints = []
 waypoints_utm = []
 
 # Pure Pursuit Variables
-L = 1 # meters
+L = 5 # meters
 goalRadius = .5; # meters
 spacingBetweenCoarseWaypoints =  0.05# 6 inches
 pp_MaxTurnAngle = np.radians(14.5) #degrees to avoid too large a PWM value
@@ -44,14 +47,8 @@ MaxAngularVelocity = math.pi/8; # radians per second; (not implemented yet need 
 ###############################
 
 # UDP from phone
-localIP = "192.168.101.203"#socket.gethostbyname(socket.gethostname())
 localPort = 20001  # The RPi will open this port for receiving GPS and sensor input from phone.
 bufferSize = 1024
-
-# Create a datagram socket
-UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-# Bind to address and ip
-UDPServerSocket.bind((localIP, localPort))
 
 sensorDict = {}
 
@@ -64,9 +61,11 @@ ser = serial.Serial('/dev/ttyACM0', 9800, timeout=1)
 
 #Set initial parameters on arduino
 def txSettings():
+    global stopTurnAngle
+    global ThrottleStop
     # output config legend: '<message_type(C for configure and D for controlls):initial_turn_angle:initial_speed>'
     try:
-        message = 'C:' + str(stopTurnAngle) + ':' + str(ThrottleStop)
+        message = 'C:' + str(int(stopTurnAngle)) + ':' + str(int(ThrottleStop))
         ser.write(message.encode())
     except:
         print("ERROR: Could not send configs to Arduino")
@@ -74,11 +73,12 @@ def txSettings():
 
 #Send control data
 def txControls(): #Have one string fore setup and one for controls
-        global pwmTurn
-        global pwmSpeed
+        global turnAngle
+        global speed
+        global nearStartingWaypoint
         #output string legend: '<message_type(C for configure and D for controlls):turn_angle:speed>'
         try:
-            message = 'D:' + str(turnAngle) + ':' + str(speed)
+            message = 'D:' + str(int(turnAngle)) + ':' + str(int(speed)) + ':' + str(int(nearStartingWaypoint))
             ser.write(message.encode())
         except:
             print('ERROR: Could not send controls to Arduino')
@@ -111,6 +111,13 @@ def throttleControl(spdPercent):
 ######################
 # Getting GPS and Sensor from Phone
 ######################
+ni.ifaddresses('wlan0')
+localIP = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+#localIP = get_ip_address('wlan0')#"192.168.101.203"#socket.gethostbyname(socket.gethostname())
+# Create a datagram socket
+UDPServerSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+# Bind to address and ip
+UDPServerSocket.bind((localIP, localPort))
 
 def udpListener2(sensorDict):
     # Listen for incoming datagrams
@@ -281,7 +288,7 @@ def purePursuit(pose, lx, ly, d):
     if abs(theta - beta) < .000001:
         gamma = 0
     else:
-        gamma = theta - beta  # direciton in radians to goal point in car's local coordinate where positive is right
+        gamma = theta - beta  # direction in radians to goal point in car's local coordinate where positive is right
 
     x_offset = d * math.sin(gamma) * -1
     y_offset = d * math.cos(gamma)
@@ -289,6 +296,7 @@ def purePursuit(pose, lx, ly, d):
 
     thesign = mysign((math.sin(pose[2]) * (lx - pose[0])) - (math.cos(pose[2]) * (ly - pose[1])))
     turnangle = thesign * turnangle
+
     # Ensure the turn control saturates at MaxTurnAngle defined by servo
     if abs(turnangle) > pp_MaxTurnAngle:
         turnangle = thesign * pp_MaxTurnAngle
@@ -489,21 +497,58 @@ def main():
     troverGoal = (sxx[-1], syy[-1])
     troverGoal = np.array(troverGoal)
     print('##############END WAYPOINTS#################')
+    print('')
+    print('##############START INIT POSITION#################')
+    print('Please place T-Rover near the first waypoint...')
+    global nearStartingWaypoint
+    while True:
+        rover_lat = sensorDict["gps"][0]  # gps lat
+        rover_lon = sensorDict["gps"][1]  # gps long
+        #rover_lat = 33.830619
+        #rover_lon = -84.587818
+        [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon)
+        theRange = range(len(sxx) - 1, -1, -1)
+        goal_x = sxx[0]  # W[0]
+        goal_y = syy[0]  # W[1]
+        x2 = rover_x
+        y2 = rover_y
+        d = math.sqrt((goal_x - x2) ** 2 + (goal_y - y2) ** 2)
+        if d <= L:
+            nearStartingWaypoint = 1
+            break
+        txControls()
+        time.sleep(1)
+    print('T-Rover is Near Initial Waypoint!')
+    print('##############END INIT POSITION#################')
+    print('')
     print(' ')
     print('T-Rover System Ready!')
     print('T-Rover Pure Pursuit Begin!')
     distanceToGoal = 9999 # initial value
     utmzone = ''
     while (distanceToGoal > goalRadius):
+        noPose = True
+        while noPose:
+            if sensorDict["gps"][0] != 'null':
+                noPose = False
+            time.sleep(.1)
         rover_lat = sensorDict["gps"][0] #gps lat
         rover_lon = sensorDict["gps"][1] #gps long
+        #test init gps 33.830619, -84.587818
+        #rover_lat = 33.830619
+        #rover_lon = -84.587818
         rover_heading_deg = sensorDict["compass"] # bearing angle (we may need to smooth this)
+        #print(rover_heading_deg)
+        sensorDict["gps"][0] = 'null'
+        sensorDict["gps"][1] = 'null'
+        sensorDict["compass"] = 'null'
         rover_heading_rad = float(np.radians(rover_heading_deg))
         [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon) # convert robot position from gps to utm
         pose = [rover_x, rover_y, rover_heading_rad]
 
         #print('Current pose: %f, %f, %f' % (pose[0],pose[1],pose[2]))
         pose = np.array(pose)
+        #print('Current pose: %f, %f, %f' % (pose[0], pose[1], pose[2]))
         #print(pose)
         # Calculate distance to goal
         distanceToGoal = np.linalg.norm(pose[0:1] - troverGoal)
@@ -526,7 +571,9 @@ def main():
         throttleControl(speedValue)
         txControls()
         while True:
-            if (dataIn == 'ack'):
+            if dataIn.find("ack") != -1:
+                xx=dataIn.split()
+                print(xx[1])
                 dataIn = '0'
                 break
             time.sleep(.1)
