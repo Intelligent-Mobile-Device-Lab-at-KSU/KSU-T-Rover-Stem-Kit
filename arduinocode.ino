@@ -119,7 +119,7 @@ void parseConfigData() {      // split the data into its parts. Borrowed from ht
     myServo.write(stopTurn);
     strtokIndx = strtok(NULL, ":");
     stopThrottle = atof(strtokIndx);
-    myEsc.write(stopThrottle);
+    myEsc.writeMicroseconds(stopThrottle);
     Serial.println("thank you!");
     Serial.flush();
     configSet = true;

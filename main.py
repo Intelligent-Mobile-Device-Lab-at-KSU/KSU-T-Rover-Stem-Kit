@@ -15,12 +15,12 @@ import threading as th
 ##############
 #General configs
 maxTurnAngle=31 #in degrees
-stopTurnPWM=1500 #in milliseconds
+stopTurnPWM=1500 #in microseconds
 maxTurnPWM=2000
 minTurnPWM=1000
-ThrottleMin=900 #in Milliseconds
-ThrottleStop=1500 #in Milliseconds
-ThrottleMax=2000 #in Milliseconds
+ThrottleMin=900 #in microseconds
+ThrottleStop=1500 #in microseconds
+ThrottleMax=2000 #in microseconds
 
 #default serial vals
 turnPWM = stopTurnPWM
