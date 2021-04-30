@@ -100,7 +100,7 @@ def udpListener_gps_heading(sensorDict):
                 msg = pynmea2.parse(nmea_sentence)
                 try:
                     angle = float(msg.true_course)
-                    angle = angle + 180
+                    angle = 360+(90-angle)
                     if angle > 360:
                         angle = angle - 360
                 except:
