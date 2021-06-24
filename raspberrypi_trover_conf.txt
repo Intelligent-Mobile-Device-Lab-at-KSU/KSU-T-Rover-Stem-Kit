@@ -1,0 +1,4 @@
+
+L=3
+
+waypointsfname = 5gwaypoints.txt
