@@ -9,3 +9,9 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 - +Wi-Fi hotspot capability
 - Google Play Account to purchase: USB Serial Port to TCP/IP Socket, UDP (or similar app)
 - 3D printer for phone holder
+
+### Demo
+[![Demo of T-Rover STEM Kit](https://img.youtube.com/vi/pe_i8sYa-b4/0.jpg)](https://www.youtube.com/watch?v=pe_i8sYa-b4)
+
+### Overview
+[![Overview](https://img.youtube.com/vi/pe_i8sYa-b4/0.jpg)](https://www.youtube.com/watch?v=pe_i8sYa-b4)
