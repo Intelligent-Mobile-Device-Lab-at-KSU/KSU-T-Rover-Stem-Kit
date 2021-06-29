@@ -26,7 +26,7 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 [![Overview](https://img.youtube.com/vi/R8oc36RE4z8/0.jpg)](https://youtu.be/R8oc36RE4z8)
 
 ### 4. Install the Smartphone Applications
-[![Overview](https://img.youtube.com/vi/jlRXvmmnXFA/3.jpg)](https://youtu.be/jlRXvmmnXFA)
+[![Overview](https://img.youtube.com/vi/jlRXvmmnXFA/0.jpg)](https://youtu.be/jlRXvmmnXFA)
 
 ### 5. Configure the Smartphone Applications
 Coming soon!
