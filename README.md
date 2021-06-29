@@ -13,19 +13,19 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 ### Demo
 [![Demo of T-Rover STEM Kit](https://img.youtube.com/vi/pe_i8sYa-b4/0.jpg)](https://www.youtube.com/watch?v=pe_i8sYa-b4)
 
-### 1. Overview
+### 1. Overview (16min 52s)
 [![Overview](https://img.youtube.com/vi/_4G7kx00GRg/0.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
 
-### 2. What is an RC Car?
+### 2. What is an RC Car? (7min 25s)
 [![Overview](https://img.youtube.com/vi/3E3yw0uLiEo/0.jpg)](https://youtu.be/3E3yw0uLiEo)
 
-### 3. Assemble the Hardware
+### 3. Assemble the Hardware (9min 54s)
 [![Overview](https://img.youtube.com/vi/J7VxdJcCk_8/0.jpg)](https://youtu.be/J7VxdJcCk_8)
 
-### 4. Connect the wires
+### 4. Connect the wires (9min 43s)
 [![Overview](https://img.youtube.com/vi/R8oc36RE4z8/0.jpg)](https://youtu.be/R8oc36RE4z8)
 
-### 4. Install the Smartphone Applications
+### 4. Install the Smartphone Applications (4min 29s)
 [![Overview](https://img.youtube.com/vi/jlRXvmmnXFA/0.jpg)](https://youtu.be/jlRXvmmnXFA)
 
 ### 5. Configure the Smartphone Applications
