@@ -26,16 +26,16 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 [![Overview](https://img.youtube.com/vi/R8oc36RE4z8/0.jpg)](https://youtu.be/R8oc36RE4z8)
 
 ### 4. Install the Smartphone Applications
-[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+[![Overview](https://img.youtube.com/vi/jlRXvmmnXFA/3.jpg)](https://youtu.be/jlRXvmmnXFA)
 
 ### 5. Configure the Smartphone Applications
-[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+Coming soon!
 
 ### 6. Download the T-Rover Software for the Raspberry Pi 
-[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+Coming soon!
 
 ### 7. Download the T-Rover Software for the Smartphone
-[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+Coming soon!
 
 ### 8. Complete Set-up and Run
-[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+Coming soon!
