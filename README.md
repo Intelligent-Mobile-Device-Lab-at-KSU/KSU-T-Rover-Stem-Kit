@@ -1,5 +1,5 @@
 # KSU T-Rover STEM Kit
-The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robotic platform. The STEM kit development was commissioned by T-Mobile in August 2020, and completed by the Intelligent Mobile Device Lab @ KSU in April 2021. The STEM kit is open for all users that would like to learn more about connected autononous vehicles, or who would like to build a low-cost GPS-based path following robot.
+The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robotic platform. The STEM kit development was commissioned by T-Mobile in August 2020, and completed by the Intelligent Mobile Device Lab @ KSU in April 2021. The STEM kit is open for all users that would like to learn more about connected autononous vehicles, or who would like to build a low-cost GPS-based path following robot. The STEM kit can be assembled for $600 - $1,200 (download the latest Bill Of Materials).
 
 ### Requirements
 
@@ -13,8 +13,26 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 ### Demo
 [![Demo of T-Rover STEM Kit](https://img.youtube.com/vi/pe_i8sYa-b4/0.jpg)](https://www.youtube.com/watch?v=pe_i8sYa-b4)
 
-### Overview
+### 1. Overview
 [![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
 
-### What is an RC Car?
+### 2. What is an RC Car?
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
 
+### 3. Assemble the Hardware
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+
+### 4. Install the Smartphone Applications
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+
+### 5. Configure the Smartphone Applications
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+
+### 6. Download the T-Rover Software for the Raspberry Pi 
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+
+### 7. Download the T-Rover Software for the Smartphone
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+
+### 8. Complete Set-up and Run
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
