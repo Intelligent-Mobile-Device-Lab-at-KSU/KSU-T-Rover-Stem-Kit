@@ -39,3 +39,6 @@ Coming soon!
 
 ### 8. Complete Set-up and Run
 Coming soon!
+
+### 9. Let's look at the code!
+Coming soon!
