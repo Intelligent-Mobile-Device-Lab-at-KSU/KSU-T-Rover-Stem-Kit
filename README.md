@@ -14,7 +14,7 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 [![Demo of T-Rover STEM Kit](https://img.youtube.com/vi/pe_i8sYa-b4/0.jpg)](https://www.youtube.com/watch?v=pe_i8sYa-b4)
 
 ### 1. Overview
-[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/3.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
+[![Overview](https://img.youtube.com/vi/_4G7kx00GRg/0.jpg)](https://www.youtube.com/watch?v=_4G7kx00GRg)
 
 ### 2. What is an RC Car?
 [![Overview](https://img.youtube.com/vi/3E3yw0uLiEo/0.jpg)](https://youtu.be/3E3yw0uLiEo)
