@@ -1,2 +1,2 @@
 
-RasberryPi_IP_Address = 192.168.0.0
+RasberryPi_IP_Address = x.x.x.x

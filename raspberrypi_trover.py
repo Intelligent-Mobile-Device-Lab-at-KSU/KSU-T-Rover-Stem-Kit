@@ -7,6 +7,7 @@ import time
 import socket
 import signal
 import io
+import sys
 from gpiozero import AngularServo
 
 print('Reading Configuration File: raspberrypi_trover_conf.txt ...')
@@ -237,15 +238,17 @@ def smoothWaypoints(wp_utm, spacing):
         y2 = float(lo[i + 1])
         x1 = float(la[i])
         y1 = float(lo[i])
+
         w1 = np.array([[x2], [y2]])
         wi = np.array([[x1], [y1]])
         v = w1 - wi
+
         if np.linalg.norm(v) == 0:
             v = .000000000000000001
         d = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
         num_points_that_fit = math.ceil(d / spacing)
         vd = (v / np.linalg.norm(v)) * spacing
-        for k in range(num_points_that_fit):
+        for k in range(int(num_points_that_fit)):
             wla.append((wi[0] + vd[0] * k))
             wlo.append((wi[1] + vd[1] * k))
             u.append(utmz)
@@ -262,9 +265,11 @@ def signal_handler(sig, frame):
     sys.exit(0)
     ######
 
-# main - This is the main embedded system of T-Rover.
-######
+# Set-up Ctrl+C handler
+signal.signal(signal.SIGINT, signal_handler)
 def main():
+    # main - This is the main embedded system of T-Rover.
+    ######
     print('T-Rover Initializing...')
     print(' ')
     ############START UDP###################
@@ -286,6 +291,7 @@ def main():
     ##############START LOAD WAYPOINTS#################
     print('Loading Coarse GPS Waypoints...')
     # read from local waypoints_file and read into 2-D float array called: waypoints
+    print(waypoints_file)
     f1 = open(waypoints_file, "r")
     for x in f1:
         latLong = x.split(",");
@@ -353,9 +359,6 @@ def main():
 
     print('Goal Reached!')
     servo.angle = 0
-
-# Set-up Ctrl+C handler
-signal.signal(signal.SIGINT, signal_handler)
 
 # Call main
 main()

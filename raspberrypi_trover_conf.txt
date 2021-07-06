@@ -1,4 +1,4 @@
 
-L=3
+L=x
 
-waypointsfname = 5gwaypoints.txt
+waypointsfname = x.txt
