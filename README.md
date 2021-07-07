@@ -51,7 +51,7 @@ Coming soon!
 * Hakeem Wilson
 * Tyler Davison
 * Mahbod Omidi
-* Kisteria Battle
+* Keisteria Battle
 * Devansh Singh
 * Muhammad Arshad
 * The Intelligent Mobile Device Lab @ KSU
