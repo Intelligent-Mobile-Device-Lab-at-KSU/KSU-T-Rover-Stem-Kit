@@ -42,3 +42,16 @@ The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robot
 
 ### 9. Let's look at the code!
 Coming soon!
+
+<!-- ACKNOWLEDGEMENTS -->
+## Acknowledgements
+* Jim Song
+* James Tharpe
+* Dr. Billy Kihei
+* Hakeem Wilson
+* Tyler Davison
+* Mahbod Omidi
+* Kisteria Battle
+* Devansh Singh
+* Muhammad Arshad
+* The Intelligent Mobile Device Lab @ KSU
