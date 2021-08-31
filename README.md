@@ -10,6 +10,8 @@ The Kennesaw State University Rover STEM Kit is a GPS-waypoint following robotic
 - Google Play Account to purchase: USB Serial Port to TCP/IP Socket, UDP (or similar app)
 - 3D printer for phone holder
 
+Note: T-Rover is now just: Rover.
+
 ### Demo
 [![Demo of T-Rover STEM Kit](https://img.youtube.com/vi/pe_i8sYa-b4/0.jpg)](https://www.youtube.com/watch?v=pe_i8sYa-b4)
 
