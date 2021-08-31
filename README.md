@@ -1,5 +1,5 @@
-# KSU T-Rover STEM Kit
-The Kennesaw State University T-Rover STEM Kit is a GPS-waypoint following robotic platform. The STEM kit development was commissioned by T-Mobile in August 2020, and completed by the Intelligent Mobile Device Lab @ KSU in April 2021. The STEM kit is open for all users that would like to learn more about connected autononous vehicles, or who would like to build a low-cost GPS-based path following robot. The STEM kit can be assembled for $600 - $1,200 (download the latest Bill Of Materials).
+# KSU Rover STEM Kit
+The Kennesaw State University Rover STEM Kit is a GPS-waypoint following robotic platform. The STEM kit development was commissioned by T-Mobile in August 2020, and completed by the Intelligent Mobile Device Lab @ KSU in April 2021. The STEM kit is open for all users that would like to learn more about connected autononous vehicles, or who would like to build a low-cost GPS-based path following robot. The STEM kit can be assembled for $600 - $1,200 (download the latest Bill Of Materials).
 
 ### Requirements
 
