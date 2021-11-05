@@ -1,0 +1,4 @@
+
+L=x
+
+waypointsfname = x.txt
