@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import threading
-import netifaces as ni
 import numpy as np
 import math
 import time
