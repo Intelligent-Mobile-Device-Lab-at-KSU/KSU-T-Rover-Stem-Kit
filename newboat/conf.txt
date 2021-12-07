@@ -1,6 +1,4 @@
 
-L=x
+L=3
 
-waypointsfname = x.txt
-
-esp32IP = x.x.x.x
+waypointsfname = dry_demo.txt
