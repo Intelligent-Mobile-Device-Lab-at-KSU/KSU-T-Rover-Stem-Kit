@@ -1,0 +1,6 @@
+
+L=x
+
+waypointsfname = x.txt
+
+esp32IP = x.x.x.x
