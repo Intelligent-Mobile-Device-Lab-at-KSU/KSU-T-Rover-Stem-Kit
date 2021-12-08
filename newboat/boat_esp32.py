@@ -8,6 +8,7 @@ import socket
 import signal
 import io
 import sys
+import pynmea2
 
 print('Reading Boat ESP32 Configuration File: conf.txt ...')
 fconf = open("conf.txt", "r")
@@ -54,7 +55,7 @@ sensorDict["compass"] = 90 # default
 # Getting GPS
 ######################
 # Automatically get Termux IP address
-localIP = ni.ifaddresses('wlan0')[ni.AF_INET][0]['addr']
+localIP = ni.ifaddresses('swlan0')[ni.AF_INET][0]['addr']
 
 # Create a GPS datagram socket listener
 UDPServerSocket_gps = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
@@ -64,9 +65,33 @@ UDPServerSocket_gps.bind((localIP, localPort_gps))
 # for incoming datagrams from the GPS-RTK breakout board via the UART bridge.
 def udpListener_gps(sensorDict):
     while True:
-        bytesAddressPair = UDPServerSocket_gps.recvfrom(bufferSize)
-        message = bytesAddressPair[0]
-        sdata = message.decode('utf-8').split(',')
+        gga=False
+        rmc=False
+        o=''
+        nmea_sentence = '---------'
+        while len(nmea_sentence)>0:
+            bytesAddressPair = UDPServerSocket_gps.recvfrom(bufferSize)
+            nmea_sentence = bytesAddressPair[0]
+            if 'GGA' in nmea_sentence:
+                msg_latlon=pynmea2.parse(nmea_sentence)
+                o+="%s,%s"%(msg_latlon.latitude,msg_latlon.longitude)
+                gga=True
+            if 'RMC' in nmea_sentence:
+                msg = pynmea2.parse(nmea_sentence)
+                try:
+                    angle = float(msg.true_course)
+                    angle = 360+(90-angle)
+                    if angle > 360:
+                        angle = angle - 360
+                except:
+                    angle='-1'
+                o+="%s,"%(str(angle))
+                rmc=True
+                                                 
+            if gga and rmc:
+                break
+        
+        sdata = o.split(",")
         sensorDict["gps"] = [float(sdata[1]), float(sdata[2])]
         if sdata[0] == 'None':
             g = 1  # default ignore, compass field not available until T-Rover moves
