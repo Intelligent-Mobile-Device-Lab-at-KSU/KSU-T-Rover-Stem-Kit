@@ -339,22 +339,22 @@ def main():
     print('Attempting to contact ESP32...')
     # TO-DO
     # Create a temporary datagram socket listener to hear from ESP32
-    tmp_UDPServerSocket_esp32hello = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-    tmp_UDPServerSocket_esp32hello.bind((localIP, 5000))
-    print("Temporary UDP server up and listening...")
-    esp32IPaddress = ''
-    while(True):
-      bytesAddressPair = tmp_UDPServerSocket_esp32hello.recvfrom(bufferSize)
-      message = bytesAddressPair[0].decode()
-      address = bytesAddressPair[1]
-      esp32IPaddress = address[0]
-      if message=="HELLO":
-        print("Hello from ESP32 recieved! Sending OK...")
-        tmp_UDPServerSocket_esp32hello.sendto(str.encode("OK"), address)
-        tmp_UDPServerSocket_esp32hello.close()
-        break
-    print('ESP32 Connected!')
     UDPClientSocket_esp32 = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    print("UDP client created.")
+    esp32IPaddress = (socket.gethostbyname('ESP32-KSU-BOAT'),5000)
+    while(True):
+        // Attempt to contact ESP32
+        UDPClientSocket_esp32.settimeout(1) // if no response within 1 second throw an exception
+        print("Sending HELLO...")
+        UDPClientSocket_esp32.sendto(str.encode("HELLO"),esp32IPaddress)
+        try:
+            bytesAddressPair = UDPClientSocket_esp32.recvfrom(bufferSize)
+            if bytesAddressPair[0].decode() == "OK":
+                print("Success!")
+                break
+        except:
+            continue // no response
+    print('ESP32 Connected!')
     print(' ')
     print('KSU-Boat System Ready!')
     print('KSU-Boat Pure Pursuit Begin!')
@@ -388,7 +388,7 @@ def main():
         # Call pure pursuit and obtain turn angle
         [turnAngle_rad, speedValue] = purePursuit(pose, goal_x, goal_y, d)
         turnAngle_deg = float(np.degrees(turnAngle_rad))
-        UDPClientSocket_esp32.sendto(str(-turnAngle_deg).encode(), (esp32IPaddress,5001))
+        UDPClientSocket_esp32.sendto(str(-turnAngle_deg).encode(), esp32IPaddress)
 
         # Print out the turn angle every 10 turn degrees
         if (c % 10) == 0:
