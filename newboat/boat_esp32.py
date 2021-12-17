@@ -310,6 +310,7 @@ def main():
     # Check if sensorDict has gps value
     noGPS = True
     while noGPS:
+        print(sensorDict)
         if 'gps' in sensorDict.keys():
             noGPS = False
         time.sleep(1)
