@@ -350,8 +350,8 @@ def main():
     print("UDP client created.")
     esp32IPaddress = (socket.gethostbyname('ESP32-KSU-BOAT'),5000)
     while(True):
-        // Attempt to contact ESP32
-        UDPClientSocket_esp32.settimeout(1) // if no response within 1 second throw an exception
+        # Attempt to contact ESP32
+        UDPClientSocket_esp32.settimeout(1) # if no response within 1 second throw an exception
         print("Sending HELLO...")
         UDPClientSocket_esp32.sendto(str.encode("HELLO"),esp32IPaddress)
         try:
@@ -360,7 +360,7 @@ def main():
                 print("Success!")
                 break
         except:
-            continue // no response
+            continue # no response
     print('ESP32 Connected!')
     print(' ')
     print('KSU-Boat System Ready!')
