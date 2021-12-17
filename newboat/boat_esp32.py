@@ -58,8 +58,8 @@ sensorDict["compass"] = 90 # default
 localIP = ni.ifaddresses('swlan0')[ni.AF_INET][0]['addr']
 
 # Create a GPS TCP client
-TCPServerSocket_gps = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-TCPServerSocket_gps.connect((localIP, localPort_gps)) # Do not change
+TCPClientSocket_gps = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+TCPClientSocket_gps.connect((localIP, localPort_gps)) # Do not change
 
 # This function is called in a separate thread for listening
 # for incoming bytes streamed from the GPS-RTK breakout board via the UART bridge.
@@ -69,7 +69,7 @@ def tcpListener_gps(sensorDict):
     rmc=False
     while(True):
         #reads a line of data (from local port), it expects a line ending
-        data=s.recv(115200)
+        data=TCPClientSocket_gps.recv(115200)
         sdata=data.decode('ascii')
         buf = io.StringIO(sdata)
         nmea_sentence = '---------'
