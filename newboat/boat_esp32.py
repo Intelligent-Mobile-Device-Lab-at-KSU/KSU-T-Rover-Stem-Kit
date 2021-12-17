@@ -43,8 +43,8 @@ L = thisL  # meters
 goalRadius = 1  # meters
 pp_MaxTurnAngle = np.radians(14.5)  # degrees to avoid too large a PWM value
 
-# GPS UDP Server Port 
-localPort_gps = 20001  # Termux will open this port for receiving GPS from GPS-RTK board via UART bridge app.
+# GPS TCP Server Port: The UART bridge app should convert serial to TCP Server 
+localPort_gps = 20001  # Termux will connect to this TCP port for receiving GPS from GPS-RTK board via UART bridge app.
 bufferSize = 1024
 
 # GPS Dictionary
@@ -57,28 +57,34 @@ sensorDict["compass"] = 90 # default
 # Automatically get Termux IP address
 localIP = ni.ifaddresses('swlan0')[ni.AF_INET][0]['addr']
 
-# Create a GPS datagram socket listener
-UDPServerSocket_gps = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-UDPServerSocket_gps.bind((localIP, localPort_gps))
+# Create a GPS TCP client
+TCPServerSocket_gps = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+TCPServerSocket_gps.connect((localIP, localPort_gps)) # Do not change
 
 # This function is called in a separate thread for listening
-# for incoming datagrams from the GPS-RTK breakout board via the UART bridge.
-def udpListener_gps(sensorDict):
+# for incoming bytes streamed from the GPS-RTK breakout board via the UART bridge.
+def tcpListener_gps(sensorDict):
+    o = ''
+    gga=False
+    rmc=False
     while True:
-        gga=False
-        rmc=False
-        o=''
+        #reads a line of data (from local port), it expects a line ending
+        data=s.recv(115200)
+        sdata=data.decode('ascii')
+        buf = io.StringIO(sdata)
         nmea_sentence = '---------'
         while len(nmea_sentence)>0:
-            bytesAddressPair = UDPServerSocket_gps.recvfrom(bufferSize)
-            nmea_sentence = bytesAddressPair[0]
+            nmea_sentence = buf.readline()
             if 'GGA' in nmea_sentence:
-                msg_latlon=pynmea2.parse(nmea_sentence)
-                o+="%s,%s"%(msg_latlon.latitude,msg_latlon.longitude)
-                gga=True
-            if 'RMC' in nmea_sentence:
-                msg = pynmea2.parse(nmea_sentence)
                 try:
+                    msg_latlon=pynmea2.parse(nmea_sentence)
+                    o+="%s,%s"%(msg_latlon.latitude,msg_latlon.longitude)
+                    gga=True
+                except:
+                    g=1 #ignore if pynmea2 fails to parse
+            if 'RMC' in nmea_sentence:
+                try:
+                    msg = pynmea2.parse(nmea_sentence)
                     angle = float(msg.true_course)
                     angle = 360+(90-angle)
                     if angle > 360:
@@ -89,15 +95,16 @@ def udpListener_gps(sensorDict):
                 rmc=True
                                                  
             if gga and rmc:
-                break
-        
-        sdata = o.split(",")
-        sensorDict["gps"] = [float(sdata[1]), float(sdata[2])]
-        if sdata[0] == 'None':
-            g = 1  # default ignore, compass field not available until T-Rover moves
-        else:
-            sensorDict["compass"] = float(sdata[0])
-        time.sleep(.05)
+                sdata = o.split(",")
+                sensorDict["gps"] = [float(sdata[1]), float(sdata[2])]
+                if sdata[0] == 'None':
+                    g = 1  # default ignore, compass field not available until T-Rover moves
+                else:
+                    sensorDict["compass"] = float(sdata[0])
+                o = ''
+                gga=False
+                rmc=False
+        time.sleep(.1)
 
 ######################
 # Pure Pursuit Controller
@@ -293,11 +300,11 @@ def main():
     ######
     print('KSU-Boat Initializing...')
     print(' ')
-    ############START UDP GPS Server Init###################
-    print('Setting Up Termux UDP Server for incoming GPS...')
-    # Set up thread for Termux UDP Server (GPS-RTK is pushing GPS over serial cable, UART bridge app converting to UDP client)
-    th_gps_udp = threading.Thread(name='udpListener_gps', target=udpListener_gps, args=(sensorDict,))
-    th_gps_udp.start()
+    ############START TCP GPS Client Init###################
+    print('Setting Up Termux TCP Client for incoming GPS...')
+    # Set up thread for Termux TCP Client (GPS-RTK is pushing GPS over serial cable, UART bridge app converting to TCP server, Termux connects as TCP client from this script)
+    th_gps_tcp = threading.Thread(name='tcpListener_gps', target=tcpListener_gps, args=(sensorDict,))
+    th_gps_tcp.start()
 
     print('Awaiting Valid GPS Signal...')
     # Check if sensorDict has gps value
