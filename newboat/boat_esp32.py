@@ -288,7 +288,7 @@ def smoothWaypoints(wp_utm, spacing):
 
 # signal_handler - catches Ctrl+C gracefully.
 def signal_handler(sig, frame):
-    UDPServerSocket_gps.close()
+    TCPClientSocket_gps.close()
     print('User ended KSU-Boat.\n')
     sys.exit(0)
     ######
@@ -314,7 +314,7 @@ def main():
             noGPS = False
         time.sleep(1)
     print('Valid GPS signal received from phone.')
-    ##############END UDP GPS Server Init#################
+    ##############END TCP GPS Client Init#################
     print(' ')
     ##############START LOAD WAYPOINTS#################
     print('Loading Coarse GPS Waypoints...')
