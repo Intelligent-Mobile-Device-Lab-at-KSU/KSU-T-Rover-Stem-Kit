@@ -67,13 +67,13 @@ def tcpListener_gps(sensorDict):
     o = ''
     gga=False
     rmc=False
-    while True:
+    while(True):
         #reads a line of data (from local port), it expects a line ending
         data=s.recv(115200)
         sdata=data.decode('ascii')
         buf = io.StringIO(sdata)
         nmea_sentence = '---------'
-        while len(nmea_sentence)>0:
+        while(len(nmea_sentence)>0):
             nmea_sentence = buf.readline()
             if 'GGA' in nmea_sentence:
                 try:
