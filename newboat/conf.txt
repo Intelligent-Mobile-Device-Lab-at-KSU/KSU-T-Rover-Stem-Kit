@@ -3,4 +3,4 @@ L=3
 
 esp32IPaddress = 192.168.145.242
 
-waypointsfname = dry_demo.txt
+waypointsfname = drydemo_avia0.txt
