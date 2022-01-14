@@ -23,6 +23,8 @@ for line in Lines:
     if count==1:
         thisL = int(sarr[1])
     elif count==2:
+        esp32localIPaddress = sarr[1]
+    elif count==3:
         thiswaypointsfname = sarr[1]
     count+=1
 fconf.close()
@@ -349,7 +351,7 @@ def main():
     # Create a temporary datagram socket listener to hear from ESP32
     UDPClientSocket_esp32 = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     print("UDP client created.")
-    esp32IPaddress = (socket.gethostbyname('ESP32-KSU-BOAT'),5000)
+    esp32IPaddress = (esp32localIPaddress,5000)
     while(True):
         # Attempt to contact ESP32
         UDPClientSocket_esp32.settimeout(1) # if no response within 1 second throw an exception
@@ -357,7 +359,8 @@ def main():
         UDPClientSocket_esp32.sendto(str.encode("HELLO"),esp32IPaddress)
         try:
             bytesAddressPair = UDPClientSocket_esp32.recvfrom(bufferSize)
-            if bytesAddressPair[0].decode() == "OK":
+            print("Received From ESP32: %s" % (bytesAddressPair[0].decode()[:2]))
+            if bytesAddressPair[0].decode()[:2] == "OK":
                 print("Success!")
                 break
         except:
