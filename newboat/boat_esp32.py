@@ -26,6 +26,8 @@ for line in Lines:
         esp32localIPaddress = sarr[1]
     elif count==3:
         thiswaypointsfname = sarr[1]
+    elif count==4:
+        thisWebSwitch = sarr[1]
     count+=1
 fconf.close()
 print('Config loaded!')
