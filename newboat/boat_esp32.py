@@ -27,12 +27,34 @@ for line in Lines:
     elif count==3:
         thiswaypointsfname = sarr[1]
     elif count==4:
-        thisWebSwitch = sarr[1]
+        thisWebSwitchIP = sarr[1]
     count+=1
 fconf.close()
 print('Config loaded!')
 
 waypoints_file = thiswaypointsfname  # Text File with GPS waypoints Lat, Long
+
+####
+#WebSwitch: Autonomous/Manual
+###
+driveMode = 0 # manual steering using controller
+def fetchDriveMode():
+    global driveMode
+    msgFromClient       = "0"
+    bytesToSend         = str.encode(msgFromClient)
+    serverAddressPort   = (thisWebSwitchIP, 11000)
+    bufferSize          = 1024 
+    # Create a UDP socket at client side
+    UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+    
+    # Send to server using created UDP socket
+    while(True):
+        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+        msgFromServer = UDPClientSocket.recvfrom(bufferSize)
+        driveMode = int(msgFromServer[0])
+        time.sleep(1)
+        #msg = "Message from Server {}".format(msgFromServer[0])
+        #print(msg)
 
 ###############################
 # Pure Pursuit Config#
@@ -304,6 +326,9 @@ def main():
     ######
     print('KSU-Boat Initializing...')
     print(' ')
+    print('Setting Up Remote Web Switch (check for manual/autonomous)')
+    th_updateDriveMode = threading.Thread(name='fetchDriveMode', target=fetchDriveMode, args=(driveMode,))
+    th_updateDriveMode.start()
     ############START TCP GPS Client Init###################
     print('Setting Up Termux TCP Client for incoming GPS...')
     # Set up thread for Termux TCP Client (GPS-RTK is pushing GPS over serial cable, UART bridge app converting to TCP server, Termux connects as TCP client from this script)
@@ -374,44 +399,54 @@ def main():
     c = 1 # used for limiting rate of output to terminal
     distanceToGoal = 9999  # initial value
     utmzone = '' # initial value
+    finished = False
+    while(True):
+        if (driveMode==0): # driveMode == Manual Steering  
+            print('Manual Steering Available!')
+            cmmd="-100"
+            UDPClientSocket_esp32.sendto(cmmd.encode(), esp32IPaddress)
+            time.sleep(5);
+        else:   # driveMode == Autonomous Steering          
+            if (distanceToGoal > goalRadius):
+                # Obtain robot location and orientation, load into pose
+                rover_lat = sensorDict["gps"][0]  # gps lat
+                rover_lon = sensorDict["gps"][1]  # gps long
+                rover_heading_deg = sensorDict["compass"]  # heading angle from phone
+                rover_heading_rad = float(np.radians(rover_heading_deg))
+                [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon)  # convert robot position from gps to utm
+                pose = [rover_x, rover_y, rover_heading_rad]
+                pose = np.array(pose)
 
-    while (distanceToGoal > goalRadius):
-        # Obtain robot location and orientation, load into pose
-        rover_lat = sensorDict["gps"][0]  # gps lat
-        rover_lon = sensorDict["gps"][1]  # gps long
-        rover_heading_deg = sensorDict["compass"]  # heading angle from phone
-        rover_heading_rad = float(np.radians(rover_heading_deg))
-        [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon)  # convert robot position from gps to utm
-        pose = [rover_x, rover_y, rover_heading_rad]
-        pose = np.array(pose)
+                # Calculate distance to goal
+                distanceToGoal = np.linalg.norm(pose[0:1] - troverGoal)
 
-        # Calculate distance to goal
-        distanceToGoal = np.linalg.norm(pose[0:1] - troverGoal)
+                # Find the next goal point within L (in utm coordinates)
+                for i in range(len(sxx) - 1, -1, -1):
+                    goal_x = sxx[i]  # W[0]
+                    goal_y = syy[i]  # W[1]
+                    x2 = pose[0]
+                    y2 = pose[1]
+                    d = math.sqrt((goal_x - x2) ** 2 + (goal_y - y2) ** 2)
+                    if d <= L:
+                        break
 
-        # Find the next goal point within L (in utm coordinates)
-        for i in range(len(sxx) - 1, -1, -1):
-            goal_x = sxx[i]  # W[0]
-            goal_y = syy[i]  # W[1]
-            x2 = pose[0]
-            y2 = pose[1]
-            d = math.sqrt((goal_x - x2) ** 2 + (goal_y - y2) ** 2)
-            if d <= L:
-                break
+                # Call pure pursuit and obtain turn angle
+                [turnAngle_rad, speedValue] = purePursuit(pose, goal_x, goal_y, d)
+                turnAngle_deg = float(np.degrees(turnAngle_rad))
+                UDPClientSocket_esp32.sendto(str(-turnAngle_deg).encode(), esp32IPaddress)
 
-        # Call pure pursuit and obtain turn angle
-        [turnAngle_rad, speedValue] = purePursuit(pose, goal_x, goal_y, d)
-        turnAngle_deg = float(np.degrees(turnAngle_rad))
-        UDPClientSocket_esp32.sendto(str(-turnAngle_deg).encode(), esp32IPaddress)
-
-        # Print out the turn angle every 10 turn degrees
-        if (c % 10) == 0:
-            print('Turn Angle (Deg): %f, D_Goal: %d' % (turnAngle_deg, d))
-            c = 0
-        c += 1
-        time.sleep(.1)
-
-    print('Goal Reached!')
-    servo.angle = 0
-
+                # Print out the turn angle every 10 turn degrees
+                if (c % 10) == 0:
+                    print('Turn Angle (Deg): %f, D_Goal: %d' % (turnAngle_deg, d))
+                    c = 0
+                c += 1
+                time.sleep(.1)
+            else:
+                print('Goal Reached! Manual Steering Available!')
+                while(True): # Change back to manual steering
+                    cmmd="-100"
+                    UDPClientSocket_esp32.sendto(cmmd.encode(), esp32IPaddress)
+                    time.sleep(5);
+                
 # Call main
 main()
