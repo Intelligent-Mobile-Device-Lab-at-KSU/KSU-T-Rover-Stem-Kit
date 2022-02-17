@@ -82,7 +82,7 @@ sensorDict["compass"] = 90 # default
 ######################
 # Automatically get Termux IP address
 localIP = ni.ifaddresses('swlan0')[ni.AF_INET][0]['addr']
-
+print(localIP)
 # Create a GPS TCP client
 TCPClientSocket_gps = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 TCPClientSocket_gps.connect((localIP, localPort_gps)) # Do not change
