@@ -327,7 +327,7 @@ def main():
     print('KSU-Boat Initializing...')
     print(' ')
     print('Setting Up Remote Web Switch (check for manual/autonomous)')
-    th_updateDriveMode = threading.Thread(name='fetchDriveMode', target=fetchDriveMode, args=(driveMode,))
+    th_updateDriveMode = threading.Thread(name='fetchDriveMode', target=fetchDriveMode, args=())
     th_updateDriveMode.start()
     ############START TCP GPS Client Init###################
     print('Setting Up Termux TCP Client for incoming GPS...')
