@@ -23,7 +23,7 @@ for line in Lines:
     if count==1:
         thisL = int(sarr[1])
     elif count==2:
-        esp32localIPaddress = "192.168.207.203"#sarr[1]
+        esp32localIPaddress = sarr[1]
     elif count==3:
         thiswaypointsfname = sarr[1]
     elif count==4:
