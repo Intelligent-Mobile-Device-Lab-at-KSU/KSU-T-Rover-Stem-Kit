@@ -9,7 +9,7 @@ import signal
 import io
 import sys
 import pynmea2
-
+matlabIPaddress = "192.168.8.118"
 print('Reading Boat ESP32 Configuration File: conf.txt ...')
 fconf = open("conf.txt", "r")
 Lines = fconf.readlines()
@@ -400,6 +400,7 @@ def main():
     distanceToGoal = 9999  # initial value
     utmzone = '' # initial value
     finished = False
+    UDPClientSocket_Telemetry = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     while(True):
         if (driveMode==0): # driveMode == Manual Steering  
             print('Manual Steering Available!')
@@ -434,7 +435,8 @@ def main():
                 [turnAngle_rad, speedValue] = purePursuit(pose, goal_x, goal_y, d)
                 turnAngle_deg = float(np.degrees(turnAngle_rad))
                 UDPClientSocket_esp32.sendto(str(-turnAngle_deg).encode(), esp32IPaddress)
-
+                stelemetry = "%d,%s,%s" % (L,rover_lat,rover_lon)
+                UDPClientSocket_Telemetry.sendto(stelemetry,(matlabIPaddress,4411))
                 # Print out the turn angle every 10 turn degrees
                 if (c % 10) == 0:
                     print('Turn Angle (Deg): %f, D_Goal: %d' % (turnAngle_deg, d))
