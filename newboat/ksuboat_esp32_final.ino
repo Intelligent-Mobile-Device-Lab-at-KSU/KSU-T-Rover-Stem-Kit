@@ -9,8 +9,8 @@ String manualSteering = "-100";
 const int switchPin = 25;
 
 // WiFi network name and password:
-const char * networkName = "Delta21";
-const char * networkPswd = "Christian";
+const char * networkName = "STEMKIT";
+const char * networkPswd = "goodlife";
 
 String hostname = "espressif"; //used to be ESP32-KSU-BOAT
 
@@ -98,6 +98,7 @@ void loop(){
     }
   }
   //Wait for 1 second
+  
   delay(100);
 }
 
