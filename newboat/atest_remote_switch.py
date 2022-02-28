@@ -436,7 +436,7 @@ def main():
                 turnAngle_deg = float(np.degrees(turnAngle_rad))
                 UDPClientSocket_esp32.sendto(str(-turnAngle_deg).encode(), esp32IPaddress)
                 stelemetry = "%d,%s,%s" % (L,rover_lat,rover_lon)
-                UDPClientSocket_Telemetry.sendto(stelemetry,(matlabIPaddress,4411))
+                UDPClientSocket_Telemetry.sendto(stelemetry.encode(),(matlabIPaddress,4411))
                 # Print out the turn angle every 10 turn degrees
                 if (c % 10) == 0:
                     print('Turn Angle (Deg): %f, D_Goal: %d' % (turnAngle_deg, d))
