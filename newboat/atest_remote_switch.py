@@ -418,7 +418,7 @@ def main():
                 rover_lon = sensorDict["gps"][1]  # gps long
                 rover_heading_deg = sensorDict["compass"]  # heading angle from phone
                 rover_heading_rad = float(np.radians(rover_heading_deg))
-                print("%s,%s,%s,%s" % (rover_lat, rover_lon, rover_heading_deg, rover_heading_rad))
+                #print("%s,%s,%s,%s" % (rover_lat, rover_lon, rover_heading_deg, rover_heading_rad))
                 [rover_x, rover_y, utmzone] = deg2utm(rover_lat, rover_lon)  # convert robot position from gps to utm
                 pose = [rover_x, rover_y, rover_heading_rad]
                 pose = np.array(pose)
