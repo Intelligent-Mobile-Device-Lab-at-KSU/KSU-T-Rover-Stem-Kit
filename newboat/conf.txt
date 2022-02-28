@@ -1,8 +1,8 @@
 
 L=3
 
-esp32IPaddress = 192.168.145.242
+esp32IPaddress = 192.168.8.131
 
-waypointsfname = drydemo_avia0.txt
+waypointsfname = lakewaypoints.txt
 
-webSwitchURL = 143.244.159.219
+webSwitchURL = 192.168.8.118
