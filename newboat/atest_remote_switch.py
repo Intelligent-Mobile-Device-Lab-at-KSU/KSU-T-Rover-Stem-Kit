@@ -48,11 +48,15 @@ def fetchDriveMode():
     UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
     
     # Send to server using created UDP socket
+    UDPClientSocket.settimeout(1)
     while(True):
-        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
-        msgFromServer = UDPClientSocket.recvfrom(bufferSize)
+        try:
+            UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+            msgFromServer = UDPClientSocket.recvfrom(bufferSize)
+        except:
+            continue
         driveMode = int(msgFromServer[0])
-        time.sleep(1)
+        time.sleep(.5)
         #msg = "Message from Server {}".format(msgFromServer[0])
         #print(msg)
 
