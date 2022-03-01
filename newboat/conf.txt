@@ -1,7 +1,7 @@
 
 L=5
 
-esp32IPaddress = 	192.168.0.101
+esp32IPaddress = 192.168.0.101
 
 waypointsfname = lakewaypoints2.txt
 
