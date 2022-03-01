@@ -1,8 +1,8 @@
 
-L=3
+L=5
 
-esp32IPaddress = 192.168.8.131
+esp32IPaddress = 	192.168.0.101
 
-waypointsfname = lakewaypoints.txt
+waypointsfname = lakewaypoints2.txt
 
-webSwitchURL = 192.168.8.118
+webSwitchURL = 192.168.0.100
