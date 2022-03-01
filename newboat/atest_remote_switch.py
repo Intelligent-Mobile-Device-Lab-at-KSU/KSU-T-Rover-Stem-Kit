@@ -9,7 +9,7 @@ import signal
 import io
 import sys
 import pynmea2
-matlabIPaddress = "192.168.45.152"
+matlabIPaddress = "192.168.0.100"
 print('Reading Boat ESP32 Configuration File: conf.txt ...')
 fconf = open("conf.txt", "r")
 Lines = fconf.readlines()
